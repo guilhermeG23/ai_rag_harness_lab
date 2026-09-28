@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI RAG Harness</title><link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div id="login" class="login card">
+    <div class="brand">AI RAG Harness</div><p>Entre para acessar suas conversas.</p>
+    <form id="login-form"><input id="email" type="email" placeholder="E-mail" required><input id="password" type="password" placeholder="Senha" required><button>Entrar</button></form>
+    <small>Ambiente didático local</small><div id="login-error" class="error"></div>
+  </div>
+  <div id="app" class="shell hidden">
+    <aside>
+      <div class="brand">AI Harness</div>
+      <button id="new-chat">＋ Nova conversa</button>
+      <input id="session-search" placeholder="Buscar conversas">
+      <div class="session-scopes"><button data-scope="active" class="scope-active">Ativas</button><button data-scope="archived">Arquivadas</button><button data-scope="trash">Lixeira</button></div>
+      <div class="section-label">FIXADAS</div><div id="pinned"></div>
+      <div class="section-label">RECENTES</div><div id="sessions"></div>
+      <div class="aside-bottom"><a href="/chat">Chat</a><a href="/lab">Laboratório</a><a href="http://localhost:8081">Serviços</a><a href="http://localhost:8083">Acessos iniciais</a><button id="profile" class="ghost">Minha conta</button><button id="logout" class="ghost">Sair</button></div>
+    </aside>
+    <main>
+      <header><div><h1 id="page-title">Chat</h1><small id="identity"></small></div><div id="mode-pill" class="pill"></div></header>
+      <section id="chat-view">
+        <div class="kb-strip"><span>Bases consultadas:</span><div id="kb-toggles"></div></div>
+        <div id="messages" class="messages"><div class="empty">Crie ou selecione uma conversa.</div></div>
+        <form id="composer"><textarea id="prompt" placeholder="Digite sua mensagem em PT-BR..." rows="2"></textarea><button>Enviar</button></form>
+      </section>
+      <section id="lab-view" class="hidden">
+        <div class="tabs"><button data-tab="bases">Bases RAG</button><button data-tab="clients">Clientes e usuários</button><button data-tab="jobs">Jobs/RabbitMQ</button><button data-tab="cache">Cache</button><button data-tab="technical">Última requisição</button></div>
+        <div id="bases" class="tab-panel"><div class="toolbar"><input id="kb-name" placeholder="Nova base"><select id="kb-tenant"></select><button id="create-kb">Criar base</button></div><div id="kb-admin"></div></div>
+        <div id="clients" class="tab-panel hidden"><div class="toolbar"><label>Retenção do grupo <select id="global-retention"><option>0</option><option>7</option><option>15</option><option>30</option><option>60</option><option>90</option></select></label><button id="save-global-retention">Aplicar</button></div><div class="toolbar"><input id="user-email" type="email" placeholder="E-mail"><input id="user-name" placeholder="Nome"><input id="user-password" type="password" placeholder="Senha (5+)"><select id="user-role"><option value="client">cliente</option><option value="admin">admin</option></select><button id="create-user">Criar usuário</button></div><div id="clients-output"></div></div>
+        <div id="jobs" class="tab-panel hidden"><button id="refresh-jobs">Atualizar</button><div id="jobs-list"></div></div>
+        <div id="cache" class="tab-panel hidden"><button id="cache-status">Consultar</button> <button id="cache-clear" class="danger">Limpar cache</button><pre id="cache-output"></pre></div>
+        <div id="technical" class="tab-panel hidden"><pre id="technical-output">Envie uma mensagem no chat para visualizar os dados técnicos.</pre></div>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body></html>

@@ -1,0 +1,15 @@
+{
+  "vhosts": [{"name": "/"}],
+  "queues": [
+    {"name": "documents", "vhost": "/", "durable": true, "auto_delete": false, "arguments": {"x-dead-letter-exchange": "ai.jobs.dlx"}},
+    {"name": "documents.dlq", "vhost": "/", "durable": true, "auto_delete": false, "arguments": {}}
+  ],
+  "exchanges": [
+    {"name": "ai.jobs", "vhost": "/", "type": "topic", "durable": true, "auto_delete": false, "internal": false, "arguments": {}},
+    {"name": "ai.jobs.dlx", "vhost": "/", "type": "topic", "durable": true, "auto_delete": false, "internal": false, "arguments": {}}
+  ],
+  "bindings": [
+    {"source": "ai.jobs", "vhost": "/", "destination": "documents", "destination_type": "queue", "routing_key": "document.*", "arguments": {}},
+    {"source": "ai.jobs.dlx", "vhost": "/", "destination": "documents.dlq", "destination_type": "queue", "routing_key": "#", "arguments": {}}
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "annotations": {"list": []},
+  "description": "Visão didática do AI RAG Harness: volume, erros, latência, cache, disponibilidade e logs dos containers.",
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "description": "Quantidade acumulada de respostas de chat concluídas ou encerradas com erro desde o início da API.",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showPercentChange": false, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "sum(chat_requests_total)", "legendFormat": "Total de chats", "range": true, "refId": "A"}],
+      "title": "Chats processados",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "description": "Percentual acumulado de chats finalizados sem erro. Uma taxa baixa indica falhas na API, no modelo ou em alguma dependência.",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 1, "max": 100, "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 90}, {"color": "green", "value": 98}]}, "unit": "percent"}, "overrides": []},
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0},
+      "id": 2,
+      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showPercentChange": false, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "100 * sum(chat_requests_total{status=\"ok\"}) / clamp_min(sum(chat_requests_total), 1)", "legendFormat": "Sucesso", "range": true, "refId": "A"}],
+      "title": "Taxa de sucesso do chat",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "description": "Quantidade de endpoints que o Prometheus consegue coletar neste instante. Este painel cobre Prometheus, API e RabbitMQ.",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 2}, {"color": "green", "value": 3}]}, "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
+      "id": 3,
+      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showPercentChange": false, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "sum(up)", "legendFormat": "Alvos ativos", "range": true, "refId": "A"}],
+      "title": "Alvos monitorados ativos",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "description": "Número atual de mensagens aguardando na fila de documentos. Crescimento contínuo pode indicar worker parado ou lento.",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 10}]}, "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0},
+      "id": 4,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showPercentChange": false, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "sum(rabbitmq_queue_messages{queue=\"documents\"}) or vector(0)", "legendFormat": "Mensagens pendentes", "range": true, "refId": "A"}],
+      "title": "Fila de documentos",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "description": "Tempo médio e percentil 95 das respostas nos últimos 5 minutos. O P95 representa o tempo abaixo do qual 95% das respostas terminaram.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "Tempo de resposta", "axisPlacement": "auto", "drawStyle": "line", "fillOpacity": 12, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 4, "showPoints": "never", "spanNulls": true}, "decimals": 2, "unit": "s"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 5},
+      "id": 5,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"editorMode": "code", "expr": "sum(rate(chat_duration_seconds_sum[5m])) / clamp_min(sum(rate(chat_duration_seconds_count[5m])), 0.000001)", "legendFormat": "Latência média", "range": true, "refId": "A"},
+        {"editorMode": "code", "expr": "histogram_quantile(0.95, sum by (le) (rate(chat_duration_seconds_bucket[5m])))", "legendFormat": "Latência P95", "range": true, "refId": "B"}
+      ],
+      "title": "Latência do chat",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "description": "Eventos de cache por segundo nos últimos 5 minutos. Hit reutiliza um valor; miss exige novo cálculo ou nova consulta vetorial.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "Eventos por segundo", "axisPlacement": "auto", "drawStyle": "line", "fillOpacity": 16, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 4, "showPoints": "never", "spanNulls": true}, "decimals": 3, "min": 0, "unit": "ops"}, "overrides": [{"matcher": {"id": "byName", "options": "Acertos (hit)"}, "properties": [{"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}]}, {"matcher": {"id": "byName", "options": "Falhas (miss)"}, "properties": [{"id": "color", "value": {"fixedColor": "yellow", "mode": "fixed"}}]}]},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 5},
+      "id": 6,
+      "options": {"legend": {"calcs": ["sum", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"editorMode": "code", "expr": "sum(rate(cache_events_total{result=\"hit\"}[5m]))", "legendFormat": "Acertos (hit)", "range": true, "refId": "A"},
+        {"editorMode": "code", "expr": "sum(rate(cache_events_total{result=\"miss\"}[5m]))", "legendFormat": "Falhas (miss)", "range": true, "refId": "B"}
+      ],
+      "title": "Uso do cache",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "description": "Chats finalizados por segundo, separados entre respostas bem-sucedidas e erros.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "Chats por segundo", "axisPlacement": "auto", "drawStyle": "bars", "fillOpacity": 35, "lineWidth": 1, "pointSize": 4, "showPoints": "never", "spanNulls": true, "stacking": {"group": "A", "mode": "normal"}}, "decimals": 3, "min": 0, "unit": "reqps"}, "overrides": [{"matcher": {"id": "byName", "options": "Sucesso"}, "properties": [{"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}]}, {"matcher": {"id": "byName", "options": "Erro"}, "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]}]},
+      "gridPos": {"h": 7, "w": 8, "x": 0, "y": 13},
+      "id": 7,
+      "options": {"legend": {"calcs": ["sum"], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"editorMode": "code", "expr": "sum(rate(chat_requests_total{status=\"ok\"}[5m]))", "legendFormat": "Sucesso", "range": true, "refId": "A"},
+        {"editorMode": "code", "expr": "sum(rate(chat_requests_total{status=\"error\"}[5m]))", "legendFormat": "Erro", "range": true, "refId": "B"}
+      ],
+      "title": "Resultado das conversas",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "loki", "uid": "loki"},
+      "description": "Saída recente dos containers coletada pelo Promtail. Use a busca do painel para filtrar por serviço, nível, request_id ou mensagem.",
+      "gridPos": {"h": 12, "w": 16, "x": 8, "y": 13},
+      "id": 8,
+      "options": {"dedupStrategy": "none", "enableInfiniteScrolling": false, "enableLogDetails": true, "prettifyLogMessage": true, "showCommonLabels": false, "showLabels": false, "showTime": true, "sortOrder": "Descending", "wrapLogMessage": true},
+      "targets": [{"direction": "backward", "editorMode": "code", "expr": "{job=\"docker\"}", "queryType": "range", "refId": "A"}],
+      "title": "Logs recentes dos containers",
+      "type": "logs"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 41,
+  "tags": ["ia", "rag", "laboratório"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "AI RAG Harness · Visão geral",
+  "uid": "ai-rag-harness",
+  "version": 2
+}
